@@ -97,6 +97,7 @@ function saveCoordinates() {
     map.fitBounds(polygon.getBounds());
 }
 
+//function for turning off scroll on map
 function noScroll() {
     map.scrollWheelZoom.disable();
 };
