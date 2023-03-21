@@ -89,8 +89,18 @@
                 </form>
                 <div class="row justify-content-end">
                     <button type="button" class="btn btn-primary btn-lg col-md-3 offset-md-3 m-3"
-                        onclick="return nav();">Bestill
-                        treningsdata</button>
+                        onclick="startTraining()">Bestill treningsdata</button>
+
+                        <script>
+                            function startTraining() {
+                                fetch('/startTraining', {
+                                    method: 'POST',
+                                })
+                                .then(response => response.json())
+                                .then(data => console.log(data))
+                                .catch(error => console.error(error));
+                            }
+                        </script>
                 </div>
             </div>
         </main>
