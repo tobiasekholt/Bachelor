@@ -91,21 +91,21 @@
                     <button type="button" class="btn btn-primary btn-lg col-md-3 offset-md-3 m-3"
                         onclick="startTraining()">Bestill treningsdata</button>
 
-                        <script>
-                            function startTraining() {
-                                fetch('/startTraining', {
-                                    method: 'POST',
-                                })
+                    <script>
+                        function startTraining() {
+                            fetch('/startTraining', {
+                                method: 'POST',
+                            })
                                 .then(response => response.json())
                                 .then(data => console.log(data))
                                 .catch(error => console.error(error));
-                            }
-                        </script>
+                        }
+                    </script>
                 </div>
             </div>
         </main>
     </div>
-    <script src="../scripts/script.js"></script>
+    <script src="/static/scripts/script.js"></script>
 
 
 

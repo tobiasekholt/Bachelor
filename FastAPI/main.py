@@ -1,36 +1,46 @@
+import subprocess
+from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
-import subprocess
+from fastapi import Response
 
 app = FastAPI()
 
 # Mount the different directories for static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/pages", StaticFiles(directory="static/pages"), name="pages")
-app.mount("/resources", StaticFiles(directory="static/resources"), name="resources")
-app.mount("/scripts", StaticFiles(directory="static/scripts"), name="scripts")
+static_dirs = ["static", "static/resources", "static/scripts"]
+for dir_name in static_dirs:
+    app.mount(f"/{dir_name}", StaticFiles(directory=dir_name), name=dir_name)
 
 templates = Jinja2Templates(directory="static/pages")
 
 @app.get("/", response_class=HTMLResponse)
-async def read_item(request: Request):
+async def read_index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/{page}.html", response_class=HTMLResponse)
+async def read_page(request: Request, page: str):
+    return templates.TemplateResponse(f"{page}.html", {"request": request})
 
 @app.get("/favicon.ico")
 async def favicon():
-    return
+    return Response(content="", media_type="image/x-icon")
 
-@app.get("/pages/order.html")
-async def read_order():
-    file_name = "order.html"
-    return templates.TemplateResponse(file_name, {"request": request})
+base_conda_cmd = [str(Path("C:/Users/nikla/anaconda3/Scripts/activate.bat")), 'base']
+
+ngisopenapi_cmd = ["cmd.exe", "/k", "CALL", str(Path("C:/Users/nikla/anaconda3/Scripts/activate.bat")), 'base', '&&', 'CALL', str(Path("C:/Users/nikla/anaconda3/Scripts/conda.exe")), 'activate', 'venv', '&&', 'python', 'C:/Users/nikla/OneDrive/Skrivebord/Bachelor/ngisopenapi/demo.py', '&&', 'conda', 'deactivate']
+
+kartAI_create_cmd = ["cmd.exe", "/k", "CALL", str(Path("C:/Users/nikla/anaconda3/Scripts/activate.bat")), 'base', '&&', 'CALL', str(Path("C:/Users/nikla/anaconda3/Scripts/conda.exe")), 'activate', 'gdal_env', '&&', 'C:/Users/nikla/OneDrive/Skrivebord/Bachelor/kartAI/kai.bat', 'create_training_data', '-n', 'small_test_area', '-c', 'C:/Users/nikla/OneDrive/Skrivebord/Bachelor/kartAI/config/dataset/kartai.json', '--region', 'C:/Users/nikla/OneDrive/Skrivebord/Bachelor/kartAI/training_data/regions/small_building_region.json', '&&', 'CALL', 'conda', 'deactivate', '&&', 'CALL', 'conda', 'deactivate']
+
+kartAI_train_cmd = ["cmd.exe", "/k", "CALL", str(Path("C:/Users/nikla/anaconda3/Scripts/activate.bat")), 'base', '&&', 'CALL', str(Path("C:/Users/nikla/anaconda3/Scripts/conda.exe")), 'activate', 'gdal_env', '&&', 'C:/Users/nikla/OneDrive/Skrivebord/Bachelor/kartAI/kai.bat', 'train', '-dn', 'small_test_area', '-m', 'unet', '-cn', 'test_small_area_unet', '-c', 'C:/Users/nikla/OneDrive/Skrivebord/Bachelor/kartAI/config/ml_input_generator/ortofoto.json', '&&', 'CALL', 'conda', 'deactivate', '&&', 'CALL', 'conda', 'deactivate']
+
 
 @app.post("/startTraining")
-async def startTraining():
-    subprocess.call(['cmd.exe', '/c', 'cd ngisopenapi && conda activate venv && python demo.py && conda deactivate && cd ..'])
-    subprocess.call(['cmd.exe', '/c', 'cd kartAI && conda activate gdal_env && kai.bat create_training_data -n small_test_area -c config/dataset/kartai.json --region training_data/regions/small_building_region.json && conda deactivate && cd ..'])
-    subprocess.call(['cmd.exe', '/c', 'cd kartAI && conda activate gdal_env && kai.bat train -dn small_test_area -m unet -cn test_small_area_unet -c config/ml_input_generator/ortofoto.json'])
-    return {"message": "Training started!"}
-
+async def start_training():
+    subprocess.Popen(base_conda_cmd)
+    subprocess.Popen(ngisopenapi_cmd)
+    subprocess.Popen(kartAI_create_cmd)
+    subprocess.Popen(kartAI_train_cmd)
+    
+    return {"message": "Training started."}
