@@ -353,11 +353,15 @@ class WMSImageSource(ImageSource):
             print("Something went very wrong in WMSImageSource", file=sys.stderr)
         elif req.status_code == 200:
             print("request status is 200")
+
             if req.headers['content-type'] == self.img_format:
                 # If response is OK and an image, save image file
                 os.makedirs(os.path.dirname(image_path), exist_ok=True)
                 with open(image_path, 'wb') as out_file:
                     shutil.copyfileobj(req.raw, out_file)
+
+                    # Added timer for sleep 3 seconds
+                    time.sleep(10)
 
                 data_source = gdal.Open(image_path)
                 return data_source.ReadAsArray(), data_source.GetSpatialRef().ExportToWkt(), data_source.GetGeoTransform()
