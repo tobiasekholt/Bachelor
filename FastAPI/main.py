@@ -27,20 +27,7 @@ async def read_page(request: Request, page: str):
 async def favicon():
     return Response(content="", media_type="image/x-icon")
 
-base_conda_cmd = [str(Path("C:/Users/nikla/anaconda3/Scripts/activate.bat")), 'base']
-
-ngisopenapi_cmd = ["cmd.exe", "/k", "CALL", str(Path("C:/Users/nikla/anaconda3/Scripts/activate.bat")), 'base', '&&', 'CALL', str(Path("C:/Users/nikla/anaconda3/Scripts/conda.exe")), 'activate', 'venv', '&&', 'python', 'C:/Users/nikla/OneDrive/Skrivebord/Bachelor/ngisopenapi/demo.py', '&&', 'conda', 'deactivate']
-
-kartAI_create_cmd = ["cmd.exe", "/k", "CALL", str(Path("C:/Users/nikla/anaconda3/Scripts/activate.bat")), 'base', '&&', 'CALL', str(Path("C:/Users/nikla/anaconda3/Scripts/conda.exe")), 'activate', 'gdal_env', '&&', 'C:/Users/nikla/OneDrive/Skrivebord/Bachelor/kartAI/kai.bat', 'create_training_data', '-n', 'small_test_area', '-c', 'C:/Users/nikla/OneDrive/Skrivebord/Bachelor/kartAI/config/dataset/kartai.json', '--region', 'C:/Users/nikla/OneDrive/Skrivebord/Bachelor/kartAI/training_data/regions/small_building_region.json', '&&', 'CALL', 'conda', 'deactivate', '&&', 'CALL', 'conda', 'deactivate']
-
-kartAI_train_cmd = ["cmd.exe", "/k", "CALL", str(Path("C:/Users/nikla/anaconda3/Scripts/activate.bat")), 'base', '&&', 'CALL', str(Path("C:/Users/nikla/anaconda3/Scripts/conda.exe")), 'activate', 'gdal_env', '&&', 'C:/Users/nikla/OneDrive/Skrivebord/Bachelor/kartAI/kai.bat', 'train', '-dn', 'small_test_area', '-m', 'unet', '-cn', 'test_small_area_unet', '-c', 'C:/Users/nikla/OneDrive/Skrivebord/Bachelor/kartAI/config/ml_input_generator/ortofoto.json', '&&', 'CALL', 'conda', 'deactivate', '&&', 'CALL', 'conda', 'deactivate']
-
-
 @app.post("/startTraining")
 async def start_training():
-    subprocess.Popen(base_conda_cmd)
-    subprocess.Popen(ngisopenapi_cmd)
-    subprocess.Popen(kartAI_create_cmd)
-    subprocess.Popen(kartAI_train_cmd)
-    
-    return {"message": "Training started."}
+    subprocess.call(['python', 'start.py'])
+    return {"message": "Training process started successfully"}

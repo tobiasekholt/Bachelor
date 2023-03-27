@@ -94,16 +94,19 @@
                     <script>
                         function startTraining() {
                             fetch('/startTraining', {
-                                method: 'POST',
+                                method: 'POST'
                             })
                                 .then(response => response.json())
                                 .then(data => console.log(data))
                                 .catch(error => console.error(error));
                         }
+
                     </script>
                 </div>
+
             </div>
-        </main>
+    </div>
+    </main>
     </div>
     <script src="/static/scripts/script.js"></script>
 
