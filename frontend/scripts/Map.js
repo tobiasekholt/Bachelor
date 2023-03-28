@@ -74,7 +74,6 @@ var uniqueCoords = uniqueCoordsArray.map(function(coord) {
 var coordinatesElement = document.getElementById("coordinates");
 var coordinatesString = "";
 for (var i = 0; i < uniqueCoords.length; i++) {
-    // Convert the LatLng to EPSG:3857 Point
     var point = L.CRS.EPSG4326.project(uniqueCoords[i]);
     coordinatesString += "<b>P" + (i+1) + ": </b>" + point.x + ", " + point.y + "<br>";
 }
