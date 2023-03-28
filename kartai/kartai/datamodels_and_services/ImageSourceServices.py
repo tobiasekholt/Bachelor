@@ -360,8 +360,8 @@ class WMSImageSource(ImageSource):
                 with open(image_path, 'wb') as out_file:
                     shutil.copyfileobj(req.raw, out_file)
 
-                    # Added timer for sleep 3 seconds
-                    time.sleep(10)
+                    # Added timer for sleep 2 seconds
+                    time.sleep(2)
 
                 data_source = gdal.Open(image_path)
                 return data_source.ReadAsArray(), data_source.GetSpatialRef().ExportToWkt(), data_source.GetGeoTransform()
