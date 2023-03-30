@@ -1,48 +1,55 @@
-// Function to get the list of files from the server and display them on the page
-function getFiles() {
-    fetch("/get_files")
-        .then(response => response.json())
-        .then(data => {
-            const fileList = document.getElementById("fileList");
-            data.files.forEach(file => {
-                const li = document.createElement("li");
-                li.innerText = file;
-                fileList.appendChild(li);
-            });
-        })
-        .catch(error => console.error(error));
-}
-
-// Function to send an email with the training data
-function sendEmail() {
-    const email = document.getElementById("emailInput").value;
-
-    if (email === "") {
-        alert("Please enter an email address");
-        return;
+async function getFiles() {
+    const response = await fetch("/get_files");
+    const data = await response.json();
+  
+    if (data.folder_summary.length === 0) {
+      const noFilesMsg = "Ingen filer funnet!";
+      document.getElementById("fileList").innerHTML = noFilesMsg;
+    } else {
+      const folderSummary = data.folder_summary;
+      document.getElementById("fileList").innerHTML = folderSummary;
     }
-
-    // Disable the submit button
+  }
+  
+  window.onload = function() {
+    getFiles();
+  };
+  
+  function updateFileListSummary() {
+    let selected_files = document.getElementById("fileInput").files;
+    let file_count = selected_files.length;
+    document.getElementById("fileListHeader").textContent = `Følgende antall filer vil bli sendt: ${file_count}`;
+  }
+  
+  function sendEmail() {
+    const email = document.getElementById("emailInput").value;
+  
+    if (email === "") {
+      alert("Please enter an email address");
+      return;
+    }
+  
     document.getElementById("submitButton").disabled = true;
-
-    // Display a loading message
-    document.getElementById("filesPreview").innerHTML = "<p>Loading...</p>";
-
-    // Send a request to the server to create and send the zip file
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/send_zip_file");
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                // Display a success message
-                document.getElementById("filesPreview").innerHTML = "<p>Email sent successfully!</p>";
-            } else {
-                // Display an error message
-                document.getElementById("filesPreview").innerHTML = "<p>An error occurred. Please try again later.</p>";
-                console.error(xhr.statusText);
-            }
+    document.getElementById("filesPreview").innerHTML = "<p>Laster...</p>";
+  
+    fetch("/send_zip_file", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email })
+    })
+      .then(response => {
+        if (response.ok) {
+          document.getElementById("filesPreview").innerHTML = "<p>E-posten ble sendt!</p>";
+        } else {
+          document.getElementById("filesPreview").innerHTML = "<p>En feil har oppstått... prøv igjen senere.</p>";
+          console.error(response.statusText);
         }
-    };
-    xhr.send(`email=${encodeURIComponent(email)}`);
-}
+      })
+      .catch(error => {
+        document.getElementById("filesPreview").innerHTML = "<p>En feil har oppstått... prøv igjen senere.</p>";
+        console.error(error);
+      });
+  }
+  

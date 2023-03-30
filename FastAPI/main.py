@@ -47,8 +47,13 @@ async def start_training():
 @app.get("/get_files")
 async def get_files():
     folder_path = r"C:/Users/nikla/OneDrive/Skrivebord/Bachelor/Bachelor/kartAI/training_data/OrtofotoWMS/3857_563000.0_6623000.0_100.0_100.0/512"
-    files = [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
-    return {"files": files}
+    files = [f for f in os.listdir(folder_path) if f.endswith('.tif')]
+    num_files = len(files)
+    if num_files == 0:
+        folder_summary = "Ingen filer funnet!"
+    else:
+        folder_summary = f"{num_files} fil(er) valgt: <br><br> {', '.join(files)}"
+    return {"folder_summary": folder_summary}
 
 @app.post("/send_zip_file")
 async def send_zip_file(request: Request):
@@ -62,26 +67,41 @@ async def send_zip_file(request: Request):
         return {"message": "No email specified"}
 
     # Get the absolute path of the training data folder
-    training_data_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'KartAI', 'training_data', 'OrtofotoWMS'))
+    training_data_folder = r"C:/Users/nikla/OneDrive/Skrivebord/Bachelor/Bachelor/kartAI/training_data/OrtofotoWMS/3857_563000.0_6623000.0_100.0_100.0/512"
 
     # Create a zip file
     zipf = zipfile.ZipFile("OrtofotoWMS.zip", "w", zipfile.ZIP_DEFLATED)
 
     # Add all the .tif files in the training data folder to the zip file
+    selected_files = []
     for file_name in os.listdir(training_data_folder):
         if file_name.endswith(".tif"):
             file_path = os.path.join(training_data_folder, file_name)
             zipf.write(file_path, file_name)
+            selected_files.append(file_name)
 
     # Close the zip file
     zipf.close()
+
+    # Generate the summary of selected files
+    num_files = len(selected_files)
+    files_str = f"{num_files} files"
+    if num_files == 1:
+        files_str = "1 file"
+    elif num_files == 0:
+        files_str = "no files"
+    else:
+        files_str = f"{num_files} files"
+
+    selected_files_summary = f"The following {files_str} will be sent: {' | '.join(selected_files)}"
 
     # Send the email with the zip file as an attachment
     message = Mail(
         from_email="no-reply-KartAI@hotmail.com",
         to_emails=email["email"],
         subject="Training data",
-        html_content="<strong>Vedlagt ligger treningsdataen som er bestilt.</strong>"
+        html_content=f"<strong>Vedlagt ligger treningsdataen som er bestilt.</strong>"
+
     )
 
     with open("OrtofotoWMS.zip", "rb") as f:
@@ -110,4 +130,4 @@ async def send_zip_file(request: Request):
     # Delete the zip file
     os.remove("OrtofotoWMS.zip")
 
-    return {"message": "Email sent successfully"}
+    return {"message": "E-post ble sendt!"}
