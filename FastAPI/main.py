@@ -4,6 +4,8 @@ import shutil
 import smtplib
 import ssl
 import zipfile
+import base64
+import sendgrid
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
@@ -14,7 +16,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi import Response
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
 
 app = FastAPI()
 
@@ -51,7 +53,13 @@ async def get_files():
 @app.post("/send_zip_file")
 async def send_zip_file(request: Request):
     # Extract email from request
-    email = await request.json()
+    email = {}
+    if request.body:
+        email = await request.json()
+
+    if not email:
+        print("No email specified")
+        return {"message": "No email specified"}
 
     # Get the absolute path of the training data folder
     training_data_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'KartAI', 'training_data', 'OrtofotoWMS'))
@@ -70,10 +78,10 @@ async def send_zip_file(request: Request):
 
     # Send the email with the zip file as an attachment
     message = Mail(
-        from_email="example@sendgrid.com",
+        from_email="no-reply-KartAI@hotmail.com",
         to_emails=email["email"],
         subject="Training data",
-        html_content="<strong>Here is the training data you requested</strong>"
+        html_content="<strong>Vedlagt ligger treningsdataen som er bestilt.</strong>"
     )
 
     with open("OrtofotoWMS.zip", "rb") as f:
@@ -81,17 +89,17 @@ async def send_zip_file(request: Request):
 
     encoded_file = base64.b64encode(attachment).decode()
 
-    attachedFile = {
-        "content": encoded_file,
-        "type": "application/zip",
-        "filename": "OrtofotoWMS.zip",
-        "disposition": "attachment"
-    }
+    attachedFile = Attachment(
+        FileContent(encoded_file),
+        FileName('OrtofotoWMS.zip'),
+        FileType('application/zip'),
+        Disposition('attachment')
+    )
 
     message.attachment = attachedFile
 
     try:
-        sg = SendGridAPIClient("API_KEY")
+        sg = sendgrid.SendGridAPIClient(api_key='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')
         response = sg.send(message)
         print(response.status_code)
         print(response.body)

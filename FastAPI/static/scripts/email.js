@@ -29,25 +29,20 @@ function sendEmail() {
     document.getElementById("filesPreview").innerHTML = "<p>Loading...</p>";
 
     // Send a request to the server to create and send the zip file
-    fetch("/send_zip_file", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            email: email
-        })
-    })
-    .then(response => {
-        // Display a success message
-        document.getElementById("filesPreview").innerHTML = "<p>Email sent successfully!</p>";
-    })
-    .catch(error => {
-        // Display an error message
-        document.getElementById("filesPreview").innerHTML = "<p>An error occurred. Please try again later.</p>";
-        console.error(error);
-    });
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/send_zip_file");
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                // Display a success message
+                document.getElementById("filesPreview").innerHTML = "<p>Email sent successfully!</p>";
+            } else {
+                // Display an error message
+                document.getElementById("filesPreview").innerHTML = "<p>An error occurred. Please try again later.</p>";
+                console.error(xhr.statusText);
+            }
+        }
+    };
+    xhr.send(`email=${encodeURIComponent(email)}`);
 }
-
-// Call the getFiles function when the page loads
-getFiles();
