@@ -223,3 +223,7 @@ label, input {
   margin-top: 0.5rem;
   display: flex;
 }
+
+.btn:disabled {
+  background-color: #009ed389 !important;
+}
